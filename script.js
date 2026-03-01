@@ -209,7 +209,7 @@ if (filledPages.includes(i)) {
   setTimeout(() => {
     page.classList.add("shake");
     setTimeout(() => page.classList.remove("shake"), 400);
-  }, 300);
+  }, 400);
 });
 console.log("wrongSound element:", wrongSound);
       if (isAdmin) {
