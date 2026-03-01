@@ -1,0 +1,123 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="main-wrapper">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Welcome Screen -->
+  <div class="welcome-wrapper">
+
+    <div class="welcome-container visible">
+      <h1>Welcome to Joshika's Slam Book</h1>
+      <button id="startBtn">Let's Dive In</button>
+    </div>
+
+    <!-- Admin button sits BELOW the white box -->
+    <button id="adminLoginBtn" class="admin-floating">Admin Login 🔐</button>
+
+    <!-- Admin Login Panel -->
+    <div id="adminLoginPanel" style="display:none; text-align:center; padding:40px;">
+      <h2>Admin Login 🔐</h2>
+      <input id="adminPass" type="password" placeholder="Enter password"
+        style="padding:10px; border-radius:8px; border:1px solid #ccc;">
+      <br><br>
+      <button onclick="adminLogin()">Login</button>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" style="display:none; padding:30px; text-align:center;">
+      <h2>Admin Dashboard 👑</h2>
+      <button onclick="downloadPDF()">📄 Download PDF (All Filled Pages)</button>
+      <button onclick="logoutAdmin()">Logout</button>
+      <br><br>
+      <p>Click "View Only" or "Reset" on any filled page.</p>
+    </div>
+
+  </div>
+  <!-- welcome-wrapper ends here ↑ -->
+
+  <!-- Pages Grid -->
+  <div class="pages-container hidden">
+    <button id="backBtn">⬅ Back</button>
+    <h2>Select Your Page 💚</h2>
+    <p id="pageMessage" class="page-message"></p>
+    <div class="pages-grid" id="pagesGrid"></div>
+  </div>
+
+  <!-- Form Screen -->
+  <div class="form-container hidden">
+    <button id="formBackBtn">⬅ Back to Pages</button>
+    <h2 id="formTitle">Slam Book Page</h2>
+
+    <form id="slamForm">
+      <div id="questionsContainer"></div>
+
+      <div id="photoUploadContainer">
+        <label for="photoUpload">Upload a Photo (optional)</label>
+        <input type="file" id="photoUpload" accept="image/*">
+        <small>You can upload a picture or leave it empty.</small>
+      </div>
+
+      <div id="colorOptionsContainer">
+        <label>Pick Page Color</label>
+        <div id="colorOptions" style="display:flex; gap:10px; margin-bottom:10px;">
+          <div class="color-swatch" data-color="#ffffff" style="background:#ffffff;"></div>
+          <div class="color-swatch" data-color="#b9f6ca" style="background:#b9f6ca;"></div>
+          <div class="color-swatch" data-color="#fce4ec" style="background:#fce4ec;"></div>
+          <div class="color-swatch" data-color="#ffe0b2" style="background:#ffe0b2;"></div>
+          <div class="color-swatch" data-color="#d1c4e9" style="background:#d1c4e9;"></div>
+          <div class="color-swatch" data-color="#c8e6c9" style="background:#c8e6c9;"></div>
+          <div class="color-swatch" data-color="#fff9c4" style="background:#fff9c4;"></div>
+        </div>
+        <small>Choose one color for your page (optional). Once you submit, you can't go back or edit this page.</small>
+      </div>
+
+      <button type="submit" id="submitBtn" style="margin-top:10px; padding:10px 20px; background:#c94f7c; color:white; border:none; border-radius:8px; font-size:16px;">
+        Submit & Lock Page
+      </button>
+    </form>
+  </div>
+
+  <!-- View Only Mode -->
+  <div id="viewOnlyContainer" class="hidden" style="padding:20px; border-radius:15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width:600px; margin:auto;">
+    <button id="viewOnlyBackBtn">⬅ Back to Pages</button>
+    <h2 id="viewOnlyTitle">Page View</h2>
+    <div id="viewOnlyContent" style="text-align:left; margin-top:20px;"></div>
+  </div>
+
+  <!-- Share Button -->
+  <div style="text-align:center; margin-top:20px;">
+    <button onclick="shareLink()">Share Slam Book</button>
+  </div>
+
+  
+  
+  <!-- Audio -->
+<audio id="clickSound" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
+<audio id="wrongSound" preload="auto" src="https://raw.githubusercontent.com/kotagirijoshika-star/slambook-assets/main/u_31vnwfmzt6-error-126627.mp3"></audio>
+
+<audio id="flipSound" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1362/1362-preview.mp3"></audio> 
+  
+<audio id="submitSound" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio> 
+  
+<audio id="laughSound" preload="auto" src="https://raw.githubusercontent.com/kotagirijoshika-star/slambook-assets/main/universfield-sinister-laugh-140131.mp3"></audio>
+
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyAdv7dELPT6xLyfmxp7Vzv2bENdB86BHrI",
+      authDomain: "joshika-slam-book-5e939.firebaseapp.com",
+      databaseURL: "https://joshika-slam-book-5e939-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "joshika-slam-book-5e939",
+      storageBucket: "joshika-slam-book-5e939.firebasestorage.app",
+      messagingSenderId: "344518567972",
+      appId: "1:344518567972:web:18203d08a9e09515bf10b1"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+</div>
