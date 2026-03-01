@@ -70,11 +70,11 @@ function playSound(id) {
 
 // ✅ Click sound on every button with small delay to avoid lag
 document.addEventListener("click", (e) => {
-  const tag = e.target.tagName;
-  if (e.target.closest("button") && tag !== "DIV" && tag !== "BODY") {
+  if (e.target.tagName === "BUTTON") {
     setTimeout(() => playSound("clickSound"), 30);
   }
 });
+  
 const startBtn = document.getElementById("startBtn");
 const adminBtn = document.getElementById("adminLoginBtn");
 
@@ -215,7 +215,7 @@ if (filledPages.includes(i)) {
     setTimeout(() => page.classList.remove("shake"), 400);
   }, 400);
 });
-console.log("wrongSound element:", wrongSound);
+
       if (isAdmin) {
 
   // Switch to admin-friendly layout
@@ -733,11 +733,6 @@ function playClick() {
   sound.play().catch(() => {});
 }
 
-document.addEventListener("click", (e) => {
-  if (e.target.closest("button")) {
-    setTimeout(() => playSound("clickSound"), 30);
-  }
-});
 
 function downloadData() {
   if(!isAdmin) return alert("Admin only!");
