@@ -14,22 +14,25 @@ allAnswers = JSON.parse(localStorage.getItem("allAnswers")) || {};
 allPageColors = JSON.parse(localStorage.getItem("allPageColors")) || {};
 allAnswersBackup = JSON.parse(localStorage.getItem("allAnswersBackup")) || {};
 
-// 🔥 REAL-TIME FIREBASE LISTENER
 firebase.database().ref("pages").on("value", (snapshot) => {
   const data = snapshot.val();
   filledPages = [];
   allAnswers = {};
   allPageColors = {};
+  allPagePhotos = {};   // ✅ added
+
   if(data){
     Object.keys(data).forEach(pageNum => {
       filledPages.push(parseInt(pageNum));
       allAnswers[pageNum] = data[pageNum].answers;
       allPageColors[pageNum] = data[pageNum].color;
+      allPagePhotos[pageNum] = data[pageNum].photo || null; // ✅ added
     });
   }
+
   generatePages();
 });
-
+  
 // ✅ SOUNDS — preloaded and ready
 const clickSound = document.getElementById("clickSound");
 const flipSound = document.getElementById("flipSound");
@@ -43,31 +46,38 @@ if(submitSound) submitSound.volume = 0.6;
 if(wrongSound) wrongSound.volume = 0.6;
 if(laughSound) laughSound.volume = 0.7;
 
-// ✅ Unlock all audio on first interaction (fixes browser autoplay block)
+// ✅ Mobile-safe audio unlock
 let audioUnlocked = false;
-  
+
 function unlockAudio() {
   if (audioUnlocked) return;
-  [clickSound, flipSound, submitSound, wrongSound, laughSound].forEach(s => {
-    if (s) {
-      s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
-    }
-  });
-  audioUnlocked = true;
+
+  const tempAudio = new Audio(clickSound.src);
+  tempAudio.volume = 0;
+
+  tempAudio.play().then(() => {
+    tempAudio.pause();
+    audioUnlocked = true;
+  }).catch(() => {});
 }
+
+document.addEventListener("touchstart", unlockAudio, { once: true });
 document.addEventListener("click", unlockAudio, { once: true });
 
 
 
 // ✅ Play any sound by element id
 function playSound(id) {
-  const s = document.getElementById(id);
-  if (!s) return;
-  s.pause();
-  s.currentTime = 0;
-  s.play().catch(() => {});
-}
+  const original = document.getElementById(id);
+  if (!original) return;
 
+  // Clone prevents mobile overlap lag
+  const sound = original.cloneNode(true);
+  sound.volume = original.volume;
+
+  sound.play().catch(() => {});
+}
+  
 // ✅ Click sound on every button with small delay to avoid lag
   
 const startBtn = document.getElementById("startBtn");
@@ -199,11 +209,7 @@ if (filledPages.includes(i)) {
   page.innerText = pageLabel; // ✅ only set once, with correct label
 
   page.addEventListener("click", () => {
-  if (wrongSound) {
-  wrongSound.pause();
-  wrongSound.currentTime = 0;
-  wrongSound.play().catch(() => {});
-}
+  playSound("wrongSound");
   pageMessage.innerText = "This page is already filled and locked.";
   setTimeout(() => {
     page.classList.add("shake");
@@ -257,10 +263,7 @@ if (filledPages.includes(i)) {
       page.innerText = "Page " + i;
 
       page.addEventListener("click", () => {
-  if (flipSound) {
-    flipSound.currentTime = 0;
-    flipSound.play();
-  }
+        playSound("flipSound");
   page.classList.add("flipped");
   setTimeout(() => page.classList.remove("flipped"), 600);
   currentPage = i;
@@ -366,15 +369,8 @@ questions.forEach((q, index) => {
 
 const color =
 document.querySelector(".color-swatch.selected")?.dataset.color || "#ffffff";
-  // Save photo to localStorage for view only + PDF
-const photoFile = document.getElementById("photoUpload").files[0];
-if (photoFile) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    localStorage.setItem(`photo_page_${currentPage}`, e.target.result);
-  };
-  reader.readAsDataURL(photoFile);
-}
+ 
+
 
 questions.forEach((q, index) => {
 if (q !== "Message for Joshika (optional)") {
@@ -403,12 +399,7 @@ if (firstEmpty !== -1) {
   return;
 }
 
-submitSound.currentTime = 0;
-submitSound.play().catch(() => {});
-setTimeout(() => {
-  submitSound.pause();
-  submitSound.currentTime = 0;
-}, 3000);
+playSound("submitSound");
 
 allAnswersBackup[currentPage] = answers;
 
@@ -417,16 +408,19 @@ localStorage.setItem(
 JSON.stringify(allAnswersBackup)
 );
 
-firebase.database().ref("pages/" + currentPage).set({
-  answers: answers,
-  color: color,
-  filledAt: Date.now()
-}).then(() => {
+const photoFile = document.getElementById("photoUpload").files[0];
+
+function saveToFirebase(photoBase64 = null) {
+  firebase.database().ref("pages/" + currentPage).set({
+    answers: answers,
+    color: color,
+    photo: photoBase64,
+    filledAt: Date.now()
+  }).then(() => {
 
   console.log("Saved to Firebase ✅");
 
-  // ✅ ADD THIS PART
-  if(!filledPages.includes(currentPage)){
+  if (!filledPages.includes(currentPage)) {
     filledPages.push(currentPage);
   }
 
@@ -437,39 +431,24 @@ firebase.database().ref("pages/" + currentPage).set({
   localStorage.setItem("allAnswers", JSON.stringify(allAnswers));
   localStorage.setItem("allPageColors", JSON.stringify(allPageColors));
 
+  // ✅ SHOW THANK YOU ONLY AFTER SAVE
+  slamForm.innerHTML = `
+  <div class="thank-you-message">
+    <h3>
+      Thank you! Your response has been recorded. Your page is now locked.
+    </h3>
+  </div>
+  `;
+
+  document.getElementById("formBackBtn").style.display = "none";
+  document.getElementById("formTitle").style.display = "none";
+
+  formContainer.style.backgroundColor = color;
+
+  launchConfetti(color);
   generatePages();
 
-}).catch((error) => {
-  console.error("Firebase error:", error);
-});
-
-const thankYouDiv = document.createElement("div");
-thankYouDiv.className = "thank-you-message";
-thankYouDiv.innerHTML = `
-  <h3>
-    Thank you! Your response has been recorded. Your page is now locked.
-  </h3>
-`;
-
-slamForm.innerHTML = `
-<div class="thank-you-message">
-<h3>
-Thank you! Your response has been recorded. Your page is now locked.
-</h3>
-</div>
-`;
-
-document.getElementById("formBackBtn").style.display = "none";
-document.getElementById("formTitle").style.display = "none";
-
-
-formContainer.style.backgroundColor = color;
-
-launchConfetti(color);
-generatePages();
-
-});
-
+})
 /* ---------------- CONFETTI ---------------- */
 
 function launchConfetti(selectedColor) {
@@ -547,16 +526,6 @@ function resetPage(pageNumber) {
 
 }
   
-function playSound(id) {
-
-const sound = document.getElementById(id);
-if (!sound) return;
-
-sound.currentTime = 0;
-sound.play().catch(() => {});
-
-}
-
 
 
 let isAdmin = false;
@@ -586,8 +555,7 @@ function adminLogin(){
 
   } else {
   // ✅ ADD THIS
-  const wrong = document.getElementById("laughSound");
-  if (wrong) { wrong.currentTime = 0; wrong.play().catch(() => {}); }
+  playSound("laughSound");
   alert("Dont act smart!");
 }
 }
@@ -669,7 +637,7 @@ Object.entries(answers).forEach(([key, obj]) => {
 });
 
 // Add photo if available
-  const savedPhoto = localStorage.getItem(`photo_page_${parseInt(pageNum)}`);
+  const savedPhoto = allPagePhotos[parseInt(pageNum)];
   if (savedPhoto) {
     try {
       if(y > 220){ doc.addPage(); y = 20; }
@@ -780,7 +748,7 @@ function openViewOnly(pageNumber) {
       block.appendChild(a);
       viewOnlyContent.appendChild(block);
     });
-    const savedPhoto = localStorage.getItem(`photo_page_${parseInt(pageNumber)}`);
+    const savedPhoto = allPagePhotos[parseInt(pageNumber)];
     if (savedPhoto) {
       const img = document.createElement("img");
       img.src = savedPhoto;
