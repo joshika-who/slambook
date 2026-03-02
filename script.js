@@ -411,6 +411,15 @@ JSON.stringify(allAnswersBackup)
 );
 
 const photoFile = document.getElementById("photoUpload").files[0];
+  if (photoFile) {
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    saveToFirebase(event.target.result);
+  };
+  reader.readAsDataURL(photoFile);
+} else {
+  saveToFirebase(null);
+}
 
 function saveToFirebase(photoBase64 = null) {
   firebase.database().ref("pages/" + currentPage).set({
