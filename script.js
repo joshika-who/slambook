@@ -7,6 +7,7 @@ let allAnswers;
 let allPageColors;
 let allAnswersBackup;
 let allPagePhotos;
+let allFilledAt;
 
 adminLoginPanel = document.getElementById("adminLoginPanel");
 adminDashboard = document.getElementById("adminDashboard");
@@ -21,14 +22,16 @@ firebase.database().ref("pages").on("value", (snapshot) => {
   filledPages = [];
   allAnswers = {};
   allPageColors = {};
-  allPagePhotos = {};   // ✅ added
+  allPagePhotos = {};
+  allFilledAt = {}; 
 
   if(data){
     Object.keys(data).forEach(pageNum => {
       filledPages.push(parseInt(pageNum));
       allAnswers[pageNum] = data[pageNum].answers;
       allPageColors[pageNum] = data[pageNum].color;
-      allPagePhotos[pageNum] = data[pageNum].photo || null; // ✅ added
+      allPagePhotos[pageNum] = data[pageNum].photo || null; 
+      allFilledAt[pageNum] = data[pageNum].filledAt || null;
     });
   }
 
@@ -192,6 +195,16 @@ showEl.classList.add("visible");
 function generatePages() {
 
   pagesGrid.innerHTML = "";
+  const adminProgress = document.getElementById("adminProgress");
+  if (adminProgress) {
+    if (isAdmin) {
+      adminProgress.style.display = "block";
+      adminProgress.innerText = `${filledPages.length}/40 pages filled`;
+    } else {
+      adminProgress.style.display = "none";
+    }
+  }
+
 
   for (let i = 1; i <= 40; i++) {
 
@@ -232,7 +245,13 @@ if (filledPages.includes(i)) {
   const label = document.createElement("span");
   label.classList.add("page-label");
   const name = allAnswers[i]?.["q0"]?.answer;
-  label.innerText = name ? `Page ${i}\n${name}` : `Page ${i}`;
+  let labelText = name ? `Page ${i}\n${name}` : `Page ${i}`;
+  const ts = allFilledAt[i];
+  if (ts) {
+    const dateStr = new Date(ts).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    labelText += `\nSubmitted on ${dateStr}`;
+  }
+  label.innerText = labelText;
 
   // Buttons wrapper
   const btnWrapper = document.createElement("div");
