@@ -245,13 +245,9 @@ if (filledPages.includes(i)) {
   const label = document.createElement("span");
   label.classList.add("page-label");
   const name = allAnswers[i]?.["q0"]?.answer;
-  let labelText = name ? `Page ${i}\n${name}` : `Page ${i}`;
-  const ts = allFilledAt[i];
-  if (ts) {
-    const dateStr = new Date(ts).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    labelText += `\nSubmitted on ${dateStr}`;
-  }
-  label.innerText = labelText;
+        
+  label.innerText = name ? `Page ${i}\n${name}` : `Page ${i}`;
+        
 
   // Buttons wrapper
   const btnWrapper = document.createElement("div");
@@ -764,7 +760,18 @@ function openViewOnly(pageNumber) {
   const viewOnlyTitle = document.getElementById("viewOnlyTitle");
   const viewOnlyContent = document.getElementById("viewOnlyContent");
   viewOnlyTitle.innerText = `Page ${pageNumber} — ${answers?.["q0"]?.answer || "Unknown"}`;
+  
   viewOnlyContent.innerHTML = "";
+
+  const ts = allFilledAt[pageNumber];
+  if (ts) {
+    const dateStr = new Date(ts).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    const tsEl = document.createElement("p");
+    tsEl.style.cssText = "font-size:13px; color:#888; margin-top:-8px; margin-bottom:14px;";
+    tsEl.innerText = `Submitted on ${dateStr}`;
+    viewOnlyContent.appendChild(tsEl);
+  }
+  
   viewOnlyContainer.style.backgroundColor = color;
   if (!answers) {
     viewOnlyContent.innerHTML = "<p>No answers found.</p>";
