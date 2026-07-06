@@ -765,7 +765,7 @@ function openViewOnly(pageNumber) {
 
   const ts = allFilledAt[pageNumber];
   if (ts) {
-    const dateStr = new Date(ts).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    const dateStr = new Date(ts).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const tsEl = document.createElement("p");
     tsEl.style.cssText = "font-size:13px; color:#888; margin-top:-8px; margin-bottom:14px;";
     tsEl.innerText = `Submitted on ${dateStr}`;
