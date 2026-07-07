@@ -803,6 +803,11 @@ function openViewOnly(pageNumber) {
   }
   switchScreen(pagesContainer, viewOnlyContainer);
   window.scrollTo(0, 0);
+
+  // ✅ restart flip animation every time
+  viewOnlyContainer.classList.remove("flip-in");
+  void viewOnlyContainer.offsetWidth; // forces browser to notice the removal
+  viewOnlyContainer.classList.add("flip-in");
 }
 
 document.getElementById("viewOnlyBackBtn").addEventListener("click", () => {
